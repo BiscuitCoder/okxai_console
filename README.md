@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/icon.png" width="128" alt="Onchain OS Console icon" />
+  <img src="public/product-icon.png" width="160" alt="Onchain OS Console product icon" />
 </p>
 
 <h1 align="center">Onchain OS Console</h1>

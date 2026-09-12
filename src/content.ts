@@ -8,7 +8,7 @@ function installConsoleEntry(current: boolean) {
   style.textContent =
     ':host{display:inline-flex;flex:0 0 auto;margin-inline:12px;align-self:center;z-index:1000}button{font:500 14px "PingFang SC",sans-serif;background:transparent;color:inherit;border:1px solid currentColor;border-radius:20px;padding:8px 16px;cursor:pointer;white-space:nowrap}button:hover{opacity:.7}button:focus-visible{outline:2px solid #279767;outline-offset:3px}:host([data-current]) button{font-weight:600}:host([data-floating]){position:fixed;right:20px;top:14px;color:#202a25;background:#f8faf8;border-radius:20px;box-shadow:0 1px 5px #0002}@media(max-width:767px){:host{display:none}}';
   const button = document.createElement("button");
-  button.textContent = current ? "控制台" : "控制台 ↗";
+  button.textContent = "控制台 ↗";
   button.title = "Onchain OS Console · 非官方本机工具";
   if (current) {
     host.setAttribute("data-current", "");

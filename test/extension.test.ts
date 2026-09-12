@@ -80,8 +80,10 @@ it("控制台路由只替换 404 内容区并保留官网框架", async () => {
   expect(document.querySelector("footer")?.textContent).toBe("OKX footer");
   expect(host?.shadowRoot).toBeNull();
   expect(host?.style.minHeight).toBe("560px");
-  expect(readFileSync("src/content.ts", "utf8")).toContain('type !== "RESIZE"');
-  expect(readFileSync("src/content.ts", "utf8")).not.toContain("100vh");
+  const source = readFileSync("src/content.ts", "utf8");
+  expect(source).toContain('button.textContent = "控制台 ↗"');
+  expect(source).toContain('type !== "RESIZE"');
+  expect(source).not.toContain("100vh");
   observer?.disconnect();
   spy.mockRestore();
   vi.unstubAllGlobals();

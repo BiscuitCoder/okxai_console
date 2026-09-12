@@ -874,6 +874,66 @@ dd {
   font-size: 12px;
   line-height: 1.8;
 }
+main {
+  font-size: 14px;
+  line-height: 1.55;
+}
+main
+  :is(
+    .notice,
+    .balance-section p,
+    .mono,
+    .muted,
+    .text-button,
+    .role-strip span,
+    .event-main strong,
+    .event-end strong,
+    .empty,
+    .filters .select-trigger,
+    .filters .select-menu,
+    .facts strong,
+    .price small,
+    .endpoint code,
+    .actions button,
+    .rejection,
+    .tabs button,
+    .asset,
+    .receipt-row,
+    .description,
+    .setting-row,
+    .privacy,
+    .data-warnings
+  ) {
+  font-size: 13px;
+}
+main
+  :is(
+    .eyebrow,
+    .metrics span,
+    .role-strip small,
+    .event-main small,
+    .badge,
+    .facts span:first-child,
+    .endpoint,
+    .list-count,
+    .wallet-addresses span,
+    .wallet-addresses code,
+    .receipt-row small,
+    .footnote,
+    .setting-row small
+  ) {
+  font-size: 12px;
+}
+.drawer-panel {
+  font-size: 14px;
+  line-height: 1.55;
+}
+.drawer-panel :is(.eyebrow, dt, .badge) {
+  font-size: 12px;
+}
+.drawer-panel :is(.notice, dl) {
+  font-size: 13px;
+}
 @media (max-width: 680px) {
   .workspace {
     display: block;
@@ -930,17 +990,8 @@ dd {
   .metrics {
     gap: 7px;
   }
-  .metrics span {
-    font-size: 9px;
-  }
   .balance-section h2 {
     font-size: 36px;
-  }
-  .notice {
-    font-size: 10px;
-  }
-  .balance-section > .text-button {
-    font-size: 10px;
   }
   .event-icon {
     display: none;
