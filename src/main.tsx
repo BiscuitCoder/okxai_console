@@ -164,7 +164,7 @@ function Select({
         aria-activedescendant={open ? `${listId}-${active}` : undefined}
         onClick={() => (open ? setOpen(false) : show())}
       >
-        <span>{selected?.label ?? "请选择"}</span>
+        <span>{selected?.label ?? "Select"}</span>
         <ChevronDown aria-hidden="true" size={14} />
       </button>
       {open && (
@@ -375,16 +375,18 @@ function App() {
   ].filter((item) => item !== "Unknown");
   const source = (key: string) =>
     snapshot.sources?.find((item) => item.key === key);
-  const emptyFor = (key: string, label: string) =>
-    source(key)?.state === "error"
+  const emptyFor = (key: string, label: string) => {
+    const localizedLabel = t(label);
+    return source(key)?.state === "error"
       ? locale === "en"
-        ? `Could not load ${label}. See Settings for details.`
-        : `${label}${locale === "zh-Hant" ? "查詢失敗，詳情見設定。" : "查询失败，详情见设置。"}`
+        ? `Could not load ${localizedLabel}. See Settings for details.`
+        : `${localizedLabel}${locale === "zh-Hant" ? "查詢失敗，詳情見設定。" : "查询失败，详情见设置。"}`
       : locale === "en"
-        ? `No ${label} found.`
+        ? `No ${localizedLabel} found.`
         : locale === "zh-Hant"
-          ? `查詢成功，目前沒有${label}。`
-          : `查询成功，当前没有${label}。`;
+          ? `查詢成功，目前沒有${localizedLabel}。`
+          : `查询成功，当前没有${localizedLabel}。`;
+  };
   const emptyForMany = (keys: string[], label: string) =>
     keys.some((key) => source(key)?.state === "error")
       ? locale === "en"
@@ -612,7 +614,7 @@ function App() {
                   <h2>{t("需要关注")}</h2>
                   <span className="muted">{ui.items(pending.length)}</span>
                 </div>
-                {eventRows(pending, "当前没有需要处理的任务或争议。")}
+                {eventRows(pending, t("当前没有需要处理的任务或争议。"))}
               </section>
               {!live && (
                 <section>
@@ -631,14 +633,16 @@ function App() {
                       >
                         <History size={17} />
                         <span>
-                          {operationLabels[r.draft.kind]}
+                          {t(operationLabels[r.draft.kind])}
                           <small>{formatDate(r.completedAt, locale)}</small>
                         </span>
-                        <Badge>演练未执行</Badge>
+                        <Badge>{t("演练未执行")}</Badge>
                       </button>
                     ))
                   ) : (
-                    <Empty text="还没有演练记录。可前往服务页体验一次价格更新。" />
+                    <Empty
+                      text={t("还没有演练记录。可前往服务页体验一次价格更新。")}
+                    />
                   )}
                 </section>
               )}
@@ -706,7 +710,14 @@ function App() {
                     <h2>{s.name}</h2>
                     <div className="price">
                       {s.price}
-                      <small>USDT / 次</small>
+                      <small>
+                        USDT /{" "}
+                        {locale === "en"
+                          ? "call"
+                          : locale === "zh-Hant"
+                            ? "次"
+                            : "次"}
+                      </small>
                     </div>
                     {s.description && (
                       <p className="description">{s.description}</p>
@@ -756,7 +767,7 @@ function App() {
                 <Empty
                   text={
                     !["all", "ASP"].includes(role)
-                      ? "当前角色不提供 ASP 服务。"
+                      ? t("当前角色不提供 ASP 服务。")
                       : emptyFor("services", "ASP 服务")
                   }
                 />
@@ -811,7 +822,9 @@ function App() {
                       setStatus("all");
                     }}
                   >
-                    {t === "all" ? translate(locale, "全部") : kindNames[t]}
+                    {t === "all"
+                      ? translate(locale, "全部")
+                      : translate(locale, kindNames[t])}
                   </button>
                 ))}
               </div>
@@ -830,13 +843,13 @@ function App() {
                         "buyer-subscriptions",
                         "provider-subscriptions",
                       ],
-                      "调用、任务或订阅",
+                      t("调用、任务或订阅"),
                     )
                   : page === 4
                     ? emptyFor("wallet-history", "钱包流水")
                     : emptyForMany(
                         ["arbitration", "refunds", "feedback"],
-                        "争议、退款或评价",
+                        t("争议、退款或评价"),
                       ),
               )}
             </>
@@ -852,17 +865,19 @@ function App() {
                   >
                     <History size={18} />
                     <span>
-                      <strong>{operationLabels[r.draft.kind]}</strong>
+                      <strong>{t(operationLabels[r.draft.kind])}</strong>
                       <small>
                         {formatDate(r.completedAt, locale)} · {r.draft.targetId}
                       </small>
                     </span>
-                    <Badge>演练未执行</Badge>
+                    <Badge>{t("演练未执行")}</Badge>
                     <ChevronRight size={15} />
                   </button>
                 ))
               ) : (
-                <Empty text="暂无记录。前往服务页发起演练，确认后将在这里留档。" />
+                <Empty
+                  text={t("暂无记录。前往服务页发起演练，确认后将在这里留档。")}
+                />
               )}
             </>
           )}
@@ -873,20 +888,20 @@ function App() {
                 <div className="setting-row">
                   <span>
                     {t("数据源")}
-                    <small>{live ? "OnchainOS CLI" : "本地模拟"}</small>
+                    <small>{live ? "OnchainOS CLI" : t("本地模拟")}</small>
                   </span>
                   <Badge>{connectionLabel}</Badge>
                 </div>
                 <div className="setting-row">
                   <span>{t("本机 Companion")}</span>
-                  <Badge>{live ? "已连接" : "开发预览"}</Badge>
+                  <Badge>{live ? t("已连接") : t("开发预览")}</Badge>
                 </div>
                 <div className="setting-row">
                   <span>
                     {t("历史存储")}
                     <small>{t("浏览器本地")}</small>
                   </span>
-                  <Badge>仅本机</Badge>
+                  <Badge>{t("仅本机")}</Badge>
                 </div>
               </section>
               {!!snapshot.warnings?.length && (
@@ -910,12 +925,12 @@ function App() {
                       </span>
                       <Badge>
                         {item.state === "available"
-                          ? `${item.count} 项`
+                          ? ui.items(item.count ?? 0)
                           : item.state === "empty"
-                            ? "当前为空"
+                            ? t("当前为空")
                             : item.state === "error"
-                              ? "查询失败"
-                              : "暂无结构化数据"}
+                              ? t("查询失败")
+                              : t("暂无结构化数据")}
                       </Badge>
                     </div>
                   ))}
@@ -925,10 +940,11 @@ function App() {
                 <h2>{t("隐私边界")}</h2>
                 <ul className="privacy">
                   <li>
-                    仅读取网页可访问的 locale Cookie
-                    用于界面语言；不读取表单、钱包私钥或 Vercel 环境变量。
+                    {t(
+                      "仅读取网页可访问的 locale Cookie 用于界面语言；不读取表单、钱包私钥或 Vercel 环境变量。",
+                    )}
                   </li>
-                  <li>扩展仅通过本机 OnchainOS CLI 发起只读查询。</li>
+                  <li>{t("扩展仅通过本机 OnchainOS CLI 发起只读查询。")}</li>
                 </ul>
               </section>
             </>
@@ -937,13 +953,13 @@ function App() {
       </div>
       <Drawer
         open={!!detail}
-        label="记录详情"
+        label={t("记录详情")}
         onClose={() => setDetail(undefined)}
       >
         <div className="dialog-heading">
-          <span className="eyebrow">记录详情</span>
+          <span className="eyebrow">{t("记录详情")}</span>
           <button
-            aria-label="关闭详情"
+            aria-label={t("关闭详情")}
             className="icon-button"
             onClick={() => setDetail(undefined)}
           >
@@ -953,20 +969,20 @@ function App() {
         {detail &&
           ("draft" in detail ? (
             <>
-              <h2>{operationLabels[detail.draft.kind]}</h2>
-              <Badge>演练未执行</Badge>
+              <h2>{t(operationLabels[detail.draft.kind])}</h2>
+              <Badge>{t("演练未执行")}</Badge>
               <p className="notice">{detail.message}</p>
               <dl>
-                <dt>目标</dt>
+                <dt>{t("目标")}</dt>
                 <dd>{detail.draft.targetId}</dd>
-                <dt>变更内容</dt>
+                <dt>{t("变更内容")}</dt>
                 <dd>{detail.draft.value}</dd>
-                <dt>时间</dt>
+                <dt>{t("时间")}</dt>
                 <dd>{formatDate(detail.completedAt, locale)}</dd>
-                <dt>本地回执 ID</dt>
+                <dt>{t("本地回执 ID")}</dt>
                 <dd>{detail.id}</dd>
-                <dt>链上交易</dt>
-                <dd>无 · 没有外部影响</dd>
+                <dt>{t("链上交易")}</dt>
+                <dd>{t("无 · 没有外部影响")}</dd>
               </dl>
             </>
           ) : (
@@ -974,20 +990,20 @@ function App() {
               <h2>{detail.title}</h2>
               <Badge>{detail.status}</Badge>
               <dl>
-                <dt>角色</dt>
+                <dt>{t("角色")}</dt>
                 <dd>{detail.role}</dd>
-                <dt>时间</dt>
+                <dt>{t("时间")}</dt>
                 <dd>{formatDate(detail.createdAt, locale)}</dd>
                 {detail.amount && (
                   <>
-                    <dt>金额</dt>
+                    <dt>{t("金额")}</dt>
                     <dd>{detail.amount} USDT</dd>
                   </>
                 )}
-                <dt>详情 / 原因</dt>
+                <dt>{t("详情 / 原因")}</dt>
                 <dd>{detail.detail}</dd>
-                <dt>引用</dt>
-                <dd>{detail.reference ?? "无真实平台或链上引用"}</dd>
+                <dt>{t("引用")}</dt>
+                <dd>{detail.reference ?? t("无真实平台或链上引用")}</dd>
               </dl>
               {!live &&
                 detail.kind === "income" &&
@@ -1014,11 +1030,11 @@ function App() {
         }}
       >
         <div className="dialog-heading">
-          <span className="eyebrow">模拟演练</span>
+          <span className="eyebrow">{t("模拟演练")}</span>
           <button
             disabled={busy}
             className="icon-button"
-            aria-label="关闭演练"
+            aria-label={t("关闭演练")}
             onClick={() => setDraft(undefined)}
           >
             <X size={20} />
@@ -1027,21 +1043,27 @@ function App() {
         {draft && (
           <>
             <h2>
-              {step === "done" ? "演练未执行" : operationLabels[draft.kind]}
+              {step === "done"
+                ? t("演练未执行")
+                : t(operationLabels[draft.kind])}
             </h2>
             <p className="description">
               {step === "edit"
-                ? "01 填写变更 → 02 确认卡 → 03 本地回执"
+                ? t("01 填写变更 → 02 确认卡 → 03 本地回执")
                 : step === "confirm"
-                  ? "02 / 请核对以下内容，再确认保存演练"
-                  : "03 / 本地回执已保存"}
+                  ? t("02 / 请核对以下内容，再确认保存演练")
+                  : t("03 / 本地回执已保存")}
             </p>
             {step === "done" ? (
               <>
                 <div className="success-mark">
                   <Check size={28} />
                 </div>
-                <p>未提交到 OKX/链上。账户资产、服务价格和审核状态均未改变。</p>
+                <p>
+                  {t(
+                    "未提交到 OKX/链上。账户资产、服务价格和审核状态均未改变。",
+                  )}
+                </p>
                 <button
                   className="primary"
                   onClick={() => {
@@ -1067,12 +1089,12 @@ function App() {
                   >
                     <label className="form-label">
                       {draft.kind === "price-update"
-                        ? "单次价格（USDT）"
+                        ? t("单次价格（USDT）")
                         : draft.kind === "service-update"
                           ? "HTTPS Endpoint"
                           : draft.kind === "reward-claim"
-                            ? "奖励金额（USDT）"
-                            : "审核说明"}
+                            ? t("奖励金额（USDT）")
+                            : t("审核说明")}
                       <input
                         autoFocus
                         required
@@ -1104,13 +1126,13 @@ function App() {
                 ) : (
                   <>
                     <dl>
-                      <dt>账户</dt>
+                      <dt>{t("账户")}</dt>
                       <dd>{account.name}</dd>
-                      <dt>目标</dt>
+                      <dt>{t("目标")}</dt>
                       <dd>{draft.targetId}</dd>
                       {draft.kind === "price-update" && (
                         <>
-                          <dt>原价格</dt>
+                          <dt>{t("原价格")}</dt>
                           <dd>
                             {
                               services.find((s) => s.id === draft.targetId)
@@ -1120,15 +1142,15 @@ function App() {
                           </dd>
                         </>
                       )}
-                      <dt>演练内容</dt>
+                      <dt>{t("演练内容")}</dt>
                       <dd>
                         {draft.value}
                         {["price-update", "reward-claim"].includes(
                           draft.kind,
                         ) && " USDT"}
                       </dd>
-                      <dt>执行范围</dt>
-                      <dd>仅本机记录，无真实提交、扣费或签名。</dd>
+                      <dt>{t("执行范围")}</dt>
+                      <dd>{t("仅本机记录，无真实提交、扣费或签名。")}</dd>
                     </dl>
                     <div className="actions">
                       <button disabled={busy} onClick={() => setStep("edit")}>
@@ -1139,7 +1161,7 @@ function App() {
                         disabled={busy}
                         onClick={save}
                       >
-                        {busy ? "正在保存…" : "确认演练"}
+                        {busy ? t("正在保存…") : t("确认演练")}
                       </button>
                     </div>
                   </>
