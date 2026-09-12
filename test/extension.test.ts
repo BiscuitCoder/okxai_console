@@ -27,6 +27,10 @@ it("MV3 仅保留存储、本机只读桥接和 OKX.AI 站点权限", () => {
   const background = readFileSync("src/background.ts", "utf8");
   expect(background).toContain("connectNative(nativeHost)");
   expect(background).not.toContain("sendNativeMessage");
+  expect(background).toContain("senderUrl.pathname === consoleUrl.pathname");
+  expect(background).not.toContain(
+    'sender.url !== chrome.runtime.getURL("index.html")',
+  );
 });
 it("非 OKX 页面不注入", async () => {
   await import("../src/content");

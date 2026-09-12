@@ -43,6 +43,21 @@ function connectNative() {
   return port;
 }
 
+function isConsoleSender(sender: chrome.runtime.MessageSender) {
+  if (sender.id !== chrome.runtime.id || !isConsoleUrl(sender.tab?.url ?? ""))
+    return false;
+  try {
+    const senderUrl = new URL(sender.url ?? "");
+    const consoleUrl = new URL(chrome.runtime.getURL("index.html"));
+    return (
+      senderUrl.origin === consoleUrl.origin &&
+      senderUrl.pathname === consoleUrl.pathname
+    );
+  } catch {
+    return false;
+  }
+}
+
 async function getSnapshot(): Promise<Snapshot> {
   const requestId = crypto.randomUUID();
   latestSnapshot = await new Promise<Snapshot>((resolve, reject) => {
@@ -64,13 +79,8 @@ async function getSnapshot(): Promise<Snapshot> {
 void chrome.storage.local.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
 
 chrome.runtime.onMessage.addListener((message, sender, reply) => {
-  if (sender.id !== chrome.runtime.id) return;
   // 仅专用 OKX.AI 路由中的扩展页面可以读写本地演练数据。
-  if (
-    sender.url !== chrome.runtime.getURL("index.html") ||
-    !isConsoleUrl(sender.tab?.url ?? "")
-  )
-    return;
+  if (!isConsoleSender(sender)) return;
   const run = async () => {
     switch (message?.type) {
       case "SNAPSHOT":
