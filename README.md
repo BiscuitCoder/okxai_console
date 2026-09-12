@@ -6,6 +6,10 @@
 
 <p align="center">把本机 OnchainOS CLI 数据带到 OKX.AI 的只读个人控制台。<br />A local, read-only personal console for OnchainOS data inside OKX.AI.</p>
 
+## Preview / 预览
+
+![Onchain OS Console overview](public/screenshots/console-overview.png)
+
 > 非 OKX 官方产品。此项目不会读取钱包私钥，也不会发起签名、付款或链上交易。
 >
 > This is not an official OKX product. It does not read wallet private keys or initiate signatures, payments, or onchain transactions.
