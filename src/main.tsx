@@ -25,6 +25,7 @@ import {
 import { client } from "./client";
 import { filterEvents } from "./data";
 import { Drawer } from "./Drawer";
+import { copy, localeFromDocument, translate, tutorialUrl } from "./locale";
 import {
   operationLabels,
   type ConsoleEvent,
@@ -35,18 +36,18 @@ import {
 } from "./domain";
 import "./style.css";
 
-const pages = [
-  ["总览", LayoutDashboard],
-  ["身份与审核", Users],
-  ["服务", Radio],
-  ["调用与任务", FileCheck2],
-  ["钱包与流水", Wallet],
-  ["争议与评价", Scale],
-  ["操作记录", History],
-  ["设置", Settings],
+const pageIcons = [
+  LayoutDashboard,
+  Users,
+  Radio,
+  FileCheck2,
+  Wallet,
+  Scale,
+  History,
+  Settings,
 ] as const;
-const formatDate = (value: string) =>
-  new Date(value).toLocaleString("zh-CN", {
+const formatDate = (value: string, locale: string) =>
+  new Date(value).toLocaleString(locale, {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
@@ -63,11 +64,7 @@ function Badge({ children }: { children: React.ReactNode }) {
     </span>
   );
 }
-function Empty({
-  text = "暂无匹配记录，试试调整筛选条件。",
-}: {
-  text?: string;
-}) {
+function Empty({ text }: { text: string }) {
   return (
     <div className="empty">
       <CircleHelp size={22} />
@@ -200,6 +197,9 @@ function Select({
   );
 }
 function App() {
+  const locale = localeFromDocument();
+  const ui = copy[locale];
+  const t = (value: string) => translate(locale, value);
   const [snapshot, setSnapshot] = useState<Snapshot>();
   const [accountId, setAccountId] = useState("");
   const [page, setPage] = useState(0);
@@ -309,23 +309,48 @@ function App() {
       setBusy(false);
     }
   }
+  function openTutorial() {
+    if (window.parent === window) location.assign(tutorialUrl);
+    else
+      window.parent.postMessage(
+        { source: "onchain-console", type: "OPEN_TUTORIAL" },
+        "*",
+      );
+  }
   if (!snapshot)
     return (
       <main className="startup">
         <Radio size={32} />
         <h1>Onchain OS Console</h1>
-        <p>{loading ? "正在加载…" : error}</p>
-        {!loading && <button onClick={boot}>重新加载</button>}
+        <p>{loading ? ui.loading : error}</p>
+        {!loading && <button onClick={boot}>{ui.reload}</button>}
+      </main>
+    );
+  const registrationRequired =
+    snapshot.mode === "live" &&
+    snapshot.identities.length === 0 &&
+    snapshot.sources?.find((item) => item.key === "identities")?.state ===
+      "empty";
+  if (registrationRequired)
+    return (
+      <main className="registration-gate">
+        <ShieldCheck size={28} />
+        <h1>{ui.registrationTitle}</h1>
+        <p>{ui.registrationBody}</p>
+        <button className="primary" onClick={openTutorial}>
+          {ui.registrationAction} <ArrowUpRight size={16} />
+        </button>
+        <small>{ui.registrationHint}</small>
       </main>
     );
   const account = snapshot.accounts.find((a) => a.id === accountId)!;
   const accountDescription = account.description.replace(/ · 演示$/, "");
   const live = snapshot.mode === "live";
   const connectionLabel = snapshot.warnings?.length
-    ? "需连接"
+    ? ui.connection
     : live
-      ? "实时"
-      : "演示";
+      ? ui.live
+      : ui.demo;
   const identities = snapshot.identities.filter(
     (i) => i.accountId === accountId,
   );
@@ -350,12 +375,24 @@ function App() {
     snapshot.sources?.find((item) => item.key === key);
   const emptyFor = (key: string, label: string) =>
     source(key)?.state === "error"
-      ? `${label}查询失败，详情见设置。`
-      : `查询成功，当前没有${label}。`;
+      ? locale === "en"
+        ? `Could not load ${label}. See Settings for details.`
+        : `${label}${locale === "zh-Hant" ? "查詢失敗，詳情見設定。" : "查询失败，详情见设置。"}`
+      : locale === "en"
+        ? `No ${label} found.`
+        : locale === "zh-Hant"
+          ? `查詢成功，目前沒有${label}。`
+          : `查询成功，当前没有${label}。`;
   const emptyForMany = (keys: string[], label: string) =>
     keys.some((key) => source(key)?.state === "error")
-      ? `${label}存在查询失败项，详情见设置。`
-      : `查询成功，当前没有${label}。`;
+      ? locale === "en"
+        ? `Some ${label} queries failed. See Settings for details.`
+        : `${label}${locale === "zh-Hant" ? "存在查詢失敗項，詳情見設定。" : "存在查询失败项，详情见设置。"}`
+      : locale === "en"
+        ? `No ${label} found.`
+        : locale === "zh-Hant"
+          ? `查詢成功，目前沒有${label}。`
+          : `查询成功，当前没有${label}。`;
   const list = events.filter(
     (e) =>
       pageKinds[page]?.includes(e.kind) && (tab === "all" || e.kind === tab),
@@ -379,22 +416,22 @@ function App() {
   const filters = (
     <div className="filters">
       <Select
-        label="角色筛选"
+        label={ui.roleFilter}
         value={role}
         onChange={setRole}
         options={[
-          { value: "all", label: "全部角色" },
+          { value: "all", label: ui.allRoles },
           ...availableRoles.map((item) => ({ value: item, label: item })),
         ]}
       />
       {pageKinds[page] && (
         <>
           <Select
-            label="状态筛选"
+            label={ui.statusFilter}
             value={status}
             onChange={setStatus}
             options={[
-              { value: "all", label: "全部状态" },
+              { value: "all", label: ui.allStatus },
               ...[...new Set(list.map((e) => e.status))].map((item) => ({
                 value: item,
                 label: item,
@@ -402,13 +439,13 @@ function App() {
             ]}
           />
           <Select
-            label="时间范围"
+            label={ui.timeRange}
             value={String(days)}
             onChange={(value) => setDays(Number(value))}
             options={[
-              { value: "0", label: "全部时间" },
-              { value: "7", label: "近 7 天" },
-              { value: "30", label: "近 30 天" },
+              { value: "0", label: ui.allTime },
+              { value: "7", label: ui.recent7 },
+              { value: "30", label: ui.recent30 },
             ]}
           />
         </>
@@ -430,7 +467,7 @@ function App() {
             <span className="event-main">
               <strong>{e.title}</strong>
               <small>
-                {e.role} · {formatDate(e.createdAt)}
+                {e.role} · {formatDate(e.createdAt, locale)}
               </small>
             </span>
             <span className="event-end">
@@ -442,7 +479,7 @@ function App() {
         ))}
       </div>
     ) : (
-      <Empty text={emptyText} />
+      <Empty text={emptyText ?? ui.empty} />
     );
   return (
     <div className="app-shell">
@@ -452,7 +489,7 @@ function App() {
             <div className="account-row">
               <Select
                 className="account-picker"
-                label="切换账户"
+                label={ui.account}
                 value={accountId}
                 onChange={(value) => void switchAccount(value)}
                 options={snapshot.accounts.map((account) => ({
@@ -462,8 +499,8 @@ function App() {
               />
               <button
                 className="icon-button"
-                aria-label="刷新数据"
-                title="刷新数据"
+                aria-label={ui.refresh}
+                title={ui.refresh}
                 disabled={loading}
                 onClick={boot}
               >
@@ -477,9 +514,9 @@ function App() {
               <span>{accountDescription}</span>
             </p>
           </div>
-          <nav aria-label="主导航">
-            {pages
-              .map(([name, Icon], i) => ({ name, Icon, i }))
+          <nav aria-label={ui.navigation}>
+            {pageIcons
+              .map((Icon, i) => ({ name: ui.pages[i], Icon, i }))
               .filter(({ i }) => !live || i !== 6)
               .map(({ name, Icon, i }) => (
                 <button
@@ -499,53 +536,50 @@ function App() {
           <div className="notice">
             <ShieldCheck size={16} />
             <span>
-              {snapshot.warnings?.[0] ??
-                (live
-                  ? "数据来自本机 OnchainOS 与 OKX.AI，只读展示。"
-                  : "所有数据均为模拟，不会提交到 OKX 或链上。")}
+              {snapshot.warnings?.[0] ?? (live ? ui.readonly : ui.mock)}
             </span>
           </div>
           {error && (
             <div className="error" role="alert">
               {error}
-              <button onClick={() => setError("")}>关闭</button>
+              <button onClick={() => setError("")}>{ui.close}</button>
             </div>
           )}
           {page === 0 && (
             <>
               <section className="balance-section">
                 <div>
-                  <p>钱包总资产</p>
+                  <p>{ui.walletTotal}</p>
                   <h2>
                     ${wallet.totalUsd.toFixed(2)} <small>USD</small>
                   </h2>
                   <span className="mono address">
-                    {wallet.address || "地址未提供"}
+                    {wallet.address || ui.addressUnavailable}
                   </span>
                 </div>
                 <button className="text-button" onClick={() => navigate(4)}>
-                  查看钱包 <ArrowUpRight size={16} />
+                  {ui.viewWallet} <ArrowUpRight size={16} />
                 </button>
               </section>
               <div className="metrics">
                 <div>
-                  <span>Agent 身份</span>
+                  <span>{ui.identities}</span>
                   <strong>{identities.length}</strong>
                 </div>
                 <div>
-                  <span>待处理事项</span>
+                  <span>{ui.attention}</span>
                   <strong>{pending.length.toString().padStart(2, "0")}</strong>
                 </div>
                 <div>
-                  <span>ASP 服务</span>
+                  <span>{ui.services}</span>
                   <strong>{services.length}</strong>
                 </div>
               </div>
               <section>
                 <div className="section-title">
-                  <h2>身份工作区</h2>
+                  <h2>{ui.identityWorkspace}</h2>
                   <button className="text-button" onClick={() => navigate(1)}>
-                    管理身份 <ChevronRight size={14} />
+                    {ui.manageIdentities} <ChevronRight size={14} />
                   </button>
                 </div>
                 <div className="role-strip">
@@ -562,7 +596,10 @@ function App() {
                         {identities.filter((i) => i.role === r).length}
                       </strong>
                       <small>
-                        个身份 <ChevronRight size={12} />
+                        {ui.items(
+                          identities.filter((i) => i.role === r).length,
+                        )}{" "}
+                        <ChevronRight size={12} />
                       </small>
                     </button>
                   ))}
@@ -570,17 +607,17 @@ function App() {
               </section>
               <section>
                 <div className="section-title">
-                  <h2>需要关注</h2>
-                  <span className="muted">{pending.length} 项</span>
+                  <h2>{t("需要关注")}</h2>
+                  <span className="muted">{ui.items(pending.length)}</span>
                 </div>
                 {eventRows(pending, "当前没有需要处理的任务或争议。")}
               </section>
               {!live && (
                 <section>
                   <div className="section-title">
-                    <h2>最近操作</h2>
+                    <h2>{t("最近操作")}</h2>
                     <button className="text-button" onClick={() => navigate(6)}>
-                      全部记录 <ChevronRight size={14} />
+                      {t("全部记录")} <ChevronRight size={14} />
                     </button>
                   </div>
                   {history.length ? (
@@ -593,7 +630,7 @@ function App() {
                         <History size={17} />
                         <span>
                           {operationLabels[r.draft.kind]}
-                          <small>{formatDate(r.completedAt)}</small>
+                          <small>{formatDate(r.completedAt, locale)}</small>
                         </span>
                         <Badge>演练未执行</Badge>
                       </button>
@@ -622,27 +659,27 @@ function App() {
                     </div>
                     <div className="facts">
                       <div>
-                        <span>上架审核</span>
+                        <span>{t("上架审核")}</span>
                         <Badge>{i.review}</Badge>
                       </div>
                       <div>
-                        <span>运行状态</span>
-                        <strong>{i.online ? "在线" : "离线"}</strong>
+                        <span>{t("运行状态")}</span>
+                        <strong>{i.online ? t("在线") : t("离线")}</strong>
                       </div>
                       <div>
-                        <span>评分</span>
+                        <span>{t("评分")}</span>
                         <strong>
-                          {i.rating ?? "暂无"}
+                          {i.rating ?? t("暂无")}
                           {i.rating && " / 5"}
                         </strong>
                       </div>
                     </div>
                     <p className="mono address">{i.address}</p>
                     <p className="muted">
-                      关联服务：
+                      {t("关联服务：")}
                       {i.serviceIds
                         .map((id) => services.find((s) => s.id === id)?.name)
-                        .join("、") || "无"}
+                        .join("、") || t("无")}
                     </p>
                   </article>
                 ))
@@ -672,7 +709,10 @@ function App() {
                     {s.description && (
                       <p className="description">{s.description}</p>
                     )}
-                    <p className="muted">累计成交：{s.volume} 次</p>
+                    <p className="muted">
+                      {t("累计成交：")}
+                      {s.volume}
+                    </p>
                     <label className="endpoint">
                       Endpoint<code>{s.endpoint}</code>
                     </label>
@@ -729,7 +769,7 @@ function App() {
                     <h2>
                       <CreditCard size={19} /> {wallet.chain}
                     </h2>
-                    <span className="muted">资产</span>
+                    <span className="muted">{t("资产")}</span>
                   </div>
                   <div className="wallet-addresses">
                     {(wallet.addresses?.length
@@ -769,12 +809,14 @@ function App() {
                       setStatus("all");
                     }}
                   >
-                    {t === "all" ? "全部" : kindNames[t]}
+                    {t === "all" ? translate(locale, "全部") : kindNames[t]}
                   </button>
                 ))}
               </div>
               {filters}
-              <p className="list-count">{filtered.length} 条记录</p>
+              <p className="list-count">
+                {filtered.length} {translate(locale, "条记录")}
+              </p>
               {eventRows(
                 filtered,
                 page === 3
@@ -810,7 +852,7 @@ function App() {
                     <span>
                       <strong>{operationLabels[r.draft.kind]}</strong>
                       <small>
-                        {formatDate(r.completedAt)} · {r.draft.targetId}
+                        {formatDate(r.completedAt, locale)} · {r.draft.targetId}
                       </small>
                     </span>
                     <Badge>演练未执行</Badge>
@@ -825,27 +867,29 @@ function App() {
           {page === 7 && (
             <>
               <section>
-                <h2>连接与数据</h2>
+                <h2>{t("连接与数据")}</h2>
                 <div className="setting-row">
                   <span>
-                    数据源<small>{live ? "OnchainOS CLI" : "本地模拟"}</small>
+                    {t("数据源")}
+                    <small>{live ? "OnchainOS CLI" : "本地模拟"}</small>
                   </span>
                   <Badge>{connectionLabel}</Badge>
                 </div>
                 <div className="setting-row">
-                  <span>本机 Companion</span>
+                  <span>{t("本机 Companion")}</span>
                   <Badge>{live ? "已连接" : "开发预览"}</Badge>
                 </div>
                 <div className="setting-row">
                   <span>
-                    历史存储<small>浏览器本地</small>
+                    {t("历史存储")}
+                    <small>{t("浏览器本地")}</small>
                   </span>
                   <Badge>仅本机</Badge>
                 </div>
               </section>
               {!!snapshot.warnings?.length && (
                 <section>
-                  <h2>数据状态</h2>
+                  <h2>{t("数据状态")}</h2>
                   <ul className="data-warnings">
                     {snapshot.warnings.map((warning) => (
                       <li key={warning}>{warning}</li>
@@ -855,7 +899,7 @@ function App() {
               )}
               {!!snapshot.sources?.length && (
                 <section>
-                  <h2>数据可用性</h2>
+                  <h2>{t("数据可用性")}</h2>
                   {snapshot.sources.map((item) => (
                     <div className="setting-row" key={item.key}>
                       <span>
@@ -876,7 +920,7 @@ function App() {
                 </section>
               )}
               <section>
-                <h2>隐私边界</h2>
+                <h2>{t("隐私边界")}</h2>
                 <ul className="privacy">
                   <li>不读取网页 Cookie、表单、钱包私钥或 Vercel 环境变量。</li>
                   <li>扩展仅通过本机 OnchainOS CLI 发起只读查询。</li>
@@ -913,7 +957,7 @@ function App() {
                 <dt>变更内容</dt>
                 <dd>{detail.draft.value}</dd>
                 <dt>时间</dt>
-                <dd>{formatDate(detail.completedAt)}</dd>
+                <dd>{formatDate(detail.completedAt, locale)}</dd>
                 <dt>本地回执 ID</dt>
                 <dd>{detail.id}</dd>
                 <dt>链上交易</dt>
@@ -928,7 +972,7 @@ function App() {
                 <dt>角色</dt>
                 <dd>{detail.role}</dd>
                 <dt>时间</dt>
-                <dd>{formatDate(detail.createdAt)}</dd>
+                <dd>{formatDate(detail.createdAt, locale)}</dd>
                 {detail.amount && (
                   <>
                     <dt>金额</dt>

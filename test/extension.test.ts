@@ -81,8 +81,9 @@ it("控制台路由只替换 404 内容区并保留官网框架", async () => {
   expect(host?.shadowRoot).toBeNull();
   expect(host?.style.minHeight).toBe("560px");
   const source = readFileSync("src/content.ts", "utf8");
-  expect(source).toContain('button.textContent = "控制台 ↗"');
-  expect(source).toContain('type !== "RESIZE"');
+  expect(source).toContain("button.textContent = consoleLabel(");
+  expect(source).toContain('"OPEN_TUTORIAL"');
+  expect(source).toContain('["RESIZE", "OPEN_TUTORIAL"]');
   expect(source).not.toContain("100vh");
   observer?.disconnect();
   spy.mockRestore();

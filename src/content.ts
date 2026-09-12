@@ -1,4 +1,5 @@
 import { CONSOLE_PATH, isConsoleUrl, isTargetUrl } from "./scope";
+import { consoleLabel, detectLocale, tutorialUrl } from "./locale";
 
 function installConsoleEntry(current: boolean) {
   const host = document.createElement("span");
@@ -8,7 +9,13 @@ function installConsoleEntry(current: boolean) {
   style.textContent =
     ':host{display:inline-flex;flex:0 0 auto;margin-inline:12px;align-self:center;z-index:1000}button{font:500 14px "PingFang SC",sans-serif;background:transparent;color:inherit;border:1px solid currentColor;border-radius:20px;padding:8px 16px;cursor:pointer;white-space:nowrap}button:hover{opacity:.7}button:focus-visible{outline:2px solid #279767;outline-offset:3px}:host([data-current]) button{font-weight:600}:host([data-floating]){position:fixed;right:20px;top:14px;color:#202a25;background:#f8faf8;border-radius:20px;box-shadow:0 1px 5px #0002}@media(max-width:767px){:host{display:none}}';
   const button = document.createElement("button");
-  button.textContent = "控制台 ↗";
+  const updateLabel = () => {
+    if (typeof document === "undefined") return;
+    button.textContent = consoleLabel(
+      detectLocale(document.documentElement.lang, location.pathname),
+    );
+  };
+  updateLabel();
   button.title = "Onchain OS Console · 非官方本机工具";
   if (current) {
     host.setAttribute("data-current", "");
@@ -20,6 +27,7 @@ function installConsoleEntry(current: boolean) {
   shadow.append(style, button);
 
   const mount = () => {
+    if (typeof document === "undefined") return;
     const header =
       document.querySelector("header") ??
       document.querySelector('[role="banner"]');
@@ -43,6 +51,10 @@ function installConsoleEntry(current: boolean) {
       mount();
     });
   }).observe(document.body, { childList: true, subtree: true });
+  new MutationObserver(updateLabel).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["lang"],
+  });
 }
 
 function installConsolePage() {
@@ -52,7 +64,16 @@ function installConsolePage() {
     "display:block!important;width:100%!important;min-height:560px!important;background:#000!important";
   const shadow = host.attachShadow({ mode: "closed" });
   const frame = document.createElement("iframe");
-  frame.src = chrome.runtime.getURL("index.html");
+  const syncLocale = () => {
+    if (typeof document === "undefined") return;
+    const frameUrl = new URL(chrome.runtime.getURL("index.html"));
+    frameUrl.searchParams.set(
+      "locale",
+      detectLocale(document.documentElement.lang, location.pathname),
+    );
+    if (frame.src !== frameUrl.href) frame.src = frameUrl.href;
+  };
+  syncLocale();
   frame.title = "Onchain OS Console";
   frame.scrolling = "no";
   frame.style.cssText =
@@ -63,15 +84,20 @@ function installConsolePage() {
     if (
       event.source !== frame.contentWindow ||
       event.data?.source !== "onchain-console" ||
-      event.data?.type !== "RESIZE"
+      !["RESIZE", "OPEN_TUTORIAL"].includes(event.data?.type)
     )
       return;
+    if (event.data.type === "OPEN_TUTORIAL") {
+      location.assign(tutorialUrl);
+      return;
+    }
     const height = Number(event.data.height);
     if (Number.isFinite(height))
       host.style.height = `${Math.min(Math.max(height, 560), 100000)}px`;
   });
 
   const mount = () => {
+    if (typeof document === "undefined") return;
     const container = document.querySelector(".okx-ai-404-container");
     if (container && host.parentElement !== container)
       container.replaceChildren(host);
@@ -80,6 +106,10 @@ function installConsolePage() {
   new MutationObserver(mount).observe(document.documentElement, {
     childList: true,
     subtree: true,
+  });
+  new MutationObserver(syncLocale).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["lang"],
   });
 }
 
