@@ -924,7 +924,10 @@ function App() {
               <section>
                 <h2>{t("隐私边界")}</h2>
                 <ul className="privacy">
-                  <li>不读取网页 Cookie、表单、钱包私钥或 Vercel 环境变量。</li>
+                  <li>
+                    仅读取网页可访问的 locale Cookie
+                    用于界面语言；不读取表单、钱包私钥或 Vercel 环境变量。
+                  </li>
                   <li>扩展仅通过本机 OnchainOS CLI 发起只读查询。</li>
                 </ul>
               </section>

@@ -12,7 +12,11 @@ function installConsoleEntry(current: boolean) {
   const updateLabel = () => {
     if (typeof document === "undefined") return;
     button.textContent = consoleLabel(
-      detectLocale(document.documentElement.lang, location.pathname),
+      detectLocale(
+        document.documentElement.lang,
+        location.pathname,
+        document.cookie,
+      ),
     );
   };
   updateLabel();
@@ -69,7 +73,11 @@ function installConsolePage() {
     const frameUrl = new URL(chrome.runtime.getURL("index.html"));
     frameUrl.searchParams.set(
       "locale",
-      detectLocale(document.documentElement.lang, location.pathname),
+      detectLocale(
+        document.documentElement.lang,
+        location.pathname,
+        document.cookie,
+      ),
     );
     if (frame.src !== frameUrl.href) frame.src = frameUrl.href;
   };

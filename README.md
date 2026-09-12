@@ -78,14 +78,14 @@ npm run dev
 
 安全不是一句“只读”声明，而是由权限、调用路径和数据处理共同限制：
 
-| 用户可能担心什么       | 项目如何限制风险                                                                                                                        |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| 会读取私钥或助记词吗？ | 不读取 OnchainOS 凭证文件，不请求私钥、助记词或签名材料，也没有签名和交易入口。                                                         |
-| 会读取 OKX.AI 网页吗？ | 内容脚本只挂载导航和替换专用路由 DOM；扩展不申请 `cookies` 或 `webRequest` 权限，也不解析网页账户数据。                                 |
-| 能执行任意本机命令吗？ | Companion 协议只接受 `snapshot`；网页和扩展请求不能传入命令或参数。固定命令通过 `execFile` 参数数组执行，不经过 shell。                 |
-| 数据会发到哪里？       | 快照只在本机 Companion 与扩展 iframe 间传递；项目没有自建服务器、遥测或云同步。CLI 查询仍会按其自身配置访问 OKX 服务。                  |
-| OKX.AI 能读取快照吗？  | 控制台 iframe 是 `chrome-extension://` 独立来源，OKX.AI 页面脚本不能读取其中的数据；后台也只接受专用路由内的扩展 iframe。               |
-| 返回内容包含令牌吗？   | 数据进入扩展前会按已知敏感字段键名递归移除 Token、API Key、Session、TEE、私钥、助记词、签名和原始交易等内容。新增上游字段仍需持续审查。 |
+| 用户可能担心什么       | 项目如何限制风险                                                                                                                                         |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 会读取私钥或助记词吗？ | 不读取 OnchainOS 凭证文件，不请求私钥、助记词或签名材料，也没有签名和交易入口。                                                                          |
+| 会读取 OKX.AI 网页吗？ | 内容脚本只挂载导航和替换专用路由 DOM，并仅读取网页可访问的 `locale` Cookie 以跟随界面语言；不申请 `cookies` 或 `webRequest` 权限，也不解析网页账户数据。 |
+| 能执行任意本机命令吗？ | Companion 协议只接受 `snapshot`；网页和扩展请求不能传入命令或参数。固定命令通过 `execFile` 参数数组执行，不经过 shell。                                  |
+| 数据会发到哪里？       | 快照只在本机 Companion 与扩展 iframe 间传递；项目没有自建服务器、遥测或云同步。CLI 查询仍会按其自身配置访问 OKX 服务。                                   |
+| OKX.AI 能读取快照吗？  | 控制台 iframe 是 `chrome-extension://` 独立来源，OKX.AI 页面脚本不能读取其中的数据；后台也只接受专用路由内的扩展 iframe。                                |
+| 返回内容包含令牌吗？   | 数据进入扩展前会按已知敏感字段键名递归移除 Token、API Key、Session、TEE、私钥、助记词、签名和原始交易等内容。新增上游字段仍需持续审查。                  |
 
 扩展仅申请 `storage`、`nativeMessaging` 和两个 OKX.AI HTTPS 域名权限。账户选择只保存在 `chrome.storage.local`，不进行云同步。每条 CLI 命令限制为 20 秒和 2 MB 输出；本机数据模式没有平台写入、领取、付款或登录操作。`companion:install` 只会在 Chrome 的 NativeMessagingHosts 目录注册宿主清单并创建固定启动脚本，不会安装系统守护进程。代码完全公开，安装前可以直接审查 [manifest](./public/manifest.json)、[扩展后台](./src/background.ts) 和 [Companion](./companion.mjs)。
 
@@ -163,14 +163,14 @@ The browser preview uses isolated mock data and does not validate Native Messagi
 
 Security is enforced through permissions, the request path, and data handling—not merely by describing the product as “read-only.”
 
-| Concern                          | Protection                                                                                                                                                                                                   |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Does it read private keys?       | It does not read OnchainOS credential files or request private keys, seed phrases, or signing material. There is no signing or transaction entry.                                                            |
-| Does it inspect the OKX.AI page? | The content script only mounts navigation and replaces the dedicated route DOM. It has no `cookies` or `webRequest` permission and parses no account data from the page.                                     |
-| Can it run arbitrary commands?   | The companion accepts only `snapshot`; pages and extension requests cannot supply commands or arguments. Fixed commands use an `execFile` argument array without a shell.                                    |
-| Where does the data go?          | Snapshots pass only between the local companion and extension iframe. The project has no backend, telemetry, or cloud sync. CLI queries still access OKX services according to their own configuration.      |
-| Can OKX.AI read the snapshot?    | The console iframe has an isolated `chrome-extension://` origin, so OKX.AI page scripts cannot read its data. The background also accepts only the extension iframe on the dedicated route.                  |
-| Can tokens reach the UI?         | Known sensitive field names are recursively removed, including tokens, API keys, sessions, TEE data, private keys, seed phrases, signatures, and raw transactions. New upstream fields still require review. |
+| Concern                          | Protection                                                                                                                                                                                                                                            |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Does it read private keys?       | It does not read OnchainOS credential files or request private keys, seed phrases, or signing material. There is no signing or transaction entry.                                                                                                     |
+| Does it inspect the OKX.AI page? | The content script only mounts navigation and replaces the dedicated route DOM. It reads only the page-accessible `locale` cookie to follow the UI language; it has no `cookies` or `webRequest` permission and parses no account data from the page. |
+| Can it run arbitrary commands?   | The companion accepts only `snapshot`; pages and extension requests cannot supply commands or arguments. Fixed commands use an `execFile` argument array without a shell.                                                                             |
+| Where does the data go?          | Snapshots pass only between the local companion and extension iframe. The project has no backend, telemetry, or cloud sync. CLI queries still access OKX services according to their own configuration.                                               |
+| Can OKX.AI read the snapshot?    | The console iframe has an isolated `chrome-extension://` origin, so OKX.AI page scripts cannot read its data. The background also accepts only the extension iframe on the dedicated route.                                                           |
+| Can tokens reach the UI?         | Known sensitive field names are recursively removed, including tokens, API keys, sessions, TEE data, private keys, seed phrases, signatures, and raw transactions. New upstream fields still require review.                                          |
 
 The extension requests only `storage`, `nativeMessaging`, and the two OKX.AI HTTPS host permissions. Account selection remains in `chrome.storage.local` and is not synced. Each CLI command has a 20-second timeout and a 2 MB output limit. Local-data mode has no platform write, claim, payment, or login operations. `companion:install` only registers a host manifest in Chrome's NativeMessagingHosts directory and creates a fixed launcher; it does not install a system daemon. The code is open for inspection: review the [manifest](./public/manifest.json), [extension background](./src/background.ts), and [companion](./companion.mjs) before installing.
 

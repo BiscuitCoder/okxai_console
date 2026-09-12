@@ -1,14 +1,29 @@
 export type UiLocale = "zh-Hans" | "zh-Hant" | "en";
 
-export function detectLocale(language = "", path = ""): UiLocale {
-  const signal = `${language} ${path}`.toLowerCase();
+function localeCookie(cookie: string) {
+  const match = cookie.match(/(?:^|;\s*)locale=([^;]*)/i);
+  if (!match) return "";
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return match[1];
+  }
+}
+
+export function detectLocale(language = "", path = "", cookie = ""): UiLocale {
+  const signal = `${localeCookie(cookie)} ${language} ${path}`.toLowerCase();
   if (/zh[-_]?(hant|tw|hk|mo)|zh-hant/.test(signal)) return "zh-Hant";
   if (/^en|\/en(?:\/|$)/.test(signal)) return "en";
   return "zh-Hans";
 }
 
 export function localeFromDocument(): UiLocale {
-  return detectLocale(document.documentElement.lang, location.pathname);
+  const queryLocale = new URLSearchParams(location.search).get("locale");
+  return detectLocale(
+    document.documentElement.lang,
+    location.pathname,
+    queryLocale ? `locale=${queryLocale}` : document.cookie,
+  );
 }
 
 export const copy = {
