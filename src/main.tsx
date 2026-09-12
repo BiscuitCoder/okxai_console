@@ -244,17 +244,19 @@ function App() {
   useEffect(() => {
     if (window.parent === window || typeof ResizeObserver === "undefined")
       return;
+    const root = document.getElementById("root");
+    if (!root) return;
     const publishHeight = () =>
       window.parent.postMessage(
         {
           source: "onchain-console",
           type: "RESIZE",
-          height: document.documentElement.scrollHeight,
+          height: Math.ceil(root.getBoundingClientRect().height),
         },
         "*",
       );
     const observer = new ResizeObserver(publishHeight);
-    observer.observe(document.documentElement);
+    observer.observe(root);
     publishHeight();
     return () => observer.disconnect();
   }, []);

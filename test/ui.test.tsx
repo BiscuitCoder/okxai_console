@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { act } from "react";
+import { readFileSync } from "node:fs";
 import { expect, it, vi } from "vitest";
 
 it("完整演练流程：取消不写入、确认保存、账户隔离、刷新持久化及八页渲染", async () => {
@@ -41,6 +42,9 @@ it("完整演练流程：取消不写入、确认保存、账户隔离、刷新�
     });
   };
   expect(document.querySelector("select")).toBeNull();
+  expect(readFileSync("src/main.tsx", "utf8")).toContain(
+    "root.getBoundingClientRect().height",
+  );
   expect(document.body.textContent).toContain("$12.48");
   for (const label of [
     "身份与审核",
