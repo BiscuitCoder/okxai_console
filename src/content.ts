@@ -20,7 +20,7 @@ function installConsoleEntry(current: boolean) {
     );
   };
   updateLabel();
-  button.title = "Onchain OS Console · 非官方本机工具";
+  button.title = "Onchain OS Console";
   if (current) {
     host.setAttribute("data-current", "");
     button.setAttribute("aria-current", "page");

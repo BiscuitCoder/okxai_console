@@ -10,9 +10,7 @@
 
 ![Onchain OS Console overview](public/screenshots/console-overview.png)
 
-> 非 OKX 官方产品。此项目不会读取钱包私钥，也不会发起签名、付款或链上交易。
->
-> This is not an official OKX product. It does not read wallet private keys or initiate signatures, payments, or onchain transactions.
+> This project does not read wallet private keys or initiate signatures, payments, or onchain transactions.
 
 ## 中文
 

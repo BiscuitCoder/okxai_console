@@ -58,7 +58,7 @@ function Badge({ children }: { children: React.ReactNode }) {
   const text = String(children);
   return (
     <span
-      className={`badge ${/驳回|异常/.test(text) ? "bad" : /待|未启用/.test(text) ? "pending" : /健康|注册|完成|确认|结算|在线/.test(text) ? "good" : ""}`}
+      className={`badge ${/驳回|异常|rejected|failed/i.test(text) ? "bad" : /待|未启用|review|pending/i.test(text) ? "pending" : /健康|注册|完成|确认|结算|在线|connected|complete/i.test(text) ? "good" : ""}`}
     >
       {children}
     </span>
@@ -200,6 +200,8 @@ function App() {
   const locale = localeFromDocument();
   const ui = copy[locale];
   const t = (value: string) => translate(locale, value);
+  const eventTitle = (value: string) =>
+    value.replace(/^转入|^转出/, (prefix) => t(prefix));
   const [snapshot, setSnapshot] = useState<Snapshot>();
   const [accountId, setAccountId] = useState("");
   const [page, setPage] = useState(0);
@@ -469,14 +471,14 @@ function App() {
               )}
             </span>
             <span className="event-main">
-              <strong>{e.title}</strong>
+              <strong>{eventTitle(e.title)}</strong>
               <small>
                 {e.role} · {formatDate(e.createdAt, locale)}
               </small>
             </span>
             <span className="event-end">
               {e.amount && <strong>{e.amount} USDT</strong>}
-              <Badge>{e.status}</Badge>
+              <Badge>{t(e.status)}</Badge>
             </span>
             <ChevronRight size={15} />
           </button>
@@ -661,12 +663,12 @@ function App() {
                         </span>
                         <h2>{i.name}</h2>
                       </div>
-                      <Badge>{i.status}</Badge>
+                      <Badge>{t(i.status)}</Badge>
                     </div>
                     <div className="facts">
                       <div>
                         <span>{t("上架审核")}</span>
-                        <Badge>{i.review}</Badge>
+                        <Badge>{t(i.review)}</Badge>
                       </div>
                       <div>
                         <span>{t("运行状态")}</span>
@@ -705,7 +707,7 @@ function App() {
                       <span className="eyebrow">
                         {s.type} / {s.id}
                       </span>
-                      <Badge>{s.review}</Badge>
+                      <Badge>{t(s.review)}</Badge>
                     </div>
                     <h2>{s.name}</h2>
                     <div className="price">
@@ -780,7 +782,7 @@ function App() {
                 <section className="wallet-summary">
                   <div className="section-title">
                     <h2>
-                      <CreditCard size={19} /> {wallet.chain}
+                      <CreditCard size={19} /> {t(wallet.chain)}
                     </h2>
                     <span className="muted">{t("资产")}</span>
                   </div>
@@ -920,8 +922,8 @@ function App() {
                   {snapshot.sources.map((item) => (
                     <div className="setting-row" key={item.key}>
                       <span>
-                        {item.label}
-                        {item.detail && <small>{item.detail}</small>}
+                        {t(item.label)}
+                        {item.detail && <small>{t(item.detail)}</small>}
                       </span>
                       <Badge>
                         {item.state === "available"
@@ -988,7 +990,7 @@ function App() {
           ) : (
             <>
               <h2>{detail.title}</h2>
-              <Badge>{detail.status}</Badge>
+              <Badge>{t(detail.status)}</Badge>
               <dl>
                 <dt>{t("角色")}</dt>
                 <dd>{detail.role}</dd>
