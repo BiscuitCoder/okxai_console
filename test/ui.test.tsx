@@ -2,6 +2,69 @@
 import { act } from "react";
 import { readFileSync } from "node:fs";
 import { expect, it, vi } from "vitest";
+import { createDemoSnapshot } from "../src/data";
+
+it.each([
+  [true, null],
+  [true, "en"],
+  [false, "en"],
+] as const)(
+  "设置中的语言偏好仅作用于独立 Web（localWeb=%s, saved=%s）",
+  async (localWeb, saved) => {
+    vi.resetModules();
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    localStorage.removeItem("onchain-web-locale");
+    if (saved) localStorage.setItem("onchain-web-locale", saved);
+    document.documentElement.lang = "zh-CN";
+    window.history.replaceState(null, "", "/?locale=zh-Hant");
+    document.body.innerHTML = '<div id="root"></div>';
+    vi.doMock("../src/client", () => ({
+      localWeb,
+      client: {
+        snapshot: async () => createDemoSnapshot(),
+        selected: async () => null,
+        history: async () => [],
+      },
+    }));
+    await act(async () => {
+      await import("../src/main");
+    });
+    expect(document.querySelector(".language-picker")).toBeNull();
+    await act(async () => {
+      const buttons =
+        document.querySelectorAll<HTMLButtonElement>("nav button");
+      buttons[buttons.length - 1].click();
+    });
+    if (localWeb) {
+      expect(document.querySelector("nav")?.textContent).toContain("Overview");
+      expect(document.documentElement.lang).toBe("en");
+      await act(async () => {
+        document
+          .querySelector<HTMLButtonElement>('[aria-label="Language"]')!
+          .click();
+      });
+      await act(async () => {
+        document
+          .querySelector<HTMLButtonElement>(
+            '[role="option"][data-value="zh-Hant"]',
+          )!
+          .click();
+      });
+      expect(document.querySelector("nav")?.textContent).toContain("總覽");
+      expect(localStorage.getItem("onchain-web-locale")).toBe("zh-Hant");
+      expect(document.documentElement.lang).toBe("zh-Hant");
+    } else {
+      expect(document.querySelector(".language-picker")).toBeNull();
+      expect(document.querySelector("nav")?.textContent).toContain("總覽");
+      expect(localStorage.getItem("onchain-web-locale")).toBe("en");
+    }
+    vi.doUnmock("../src/client");
+    vi.resetModules();
+    vi.unstubAllGlobals();
+    document.documentElement.lang = "zh-CN";
+    window.history.replaceState(null, "", "/");
+  },
+);
 
 it("完整演练流程：取消不写入、确认保存、账户隔离、刷新持久化及八页渲染", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);

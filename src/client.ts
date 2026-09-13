@@ -2,7 +2,7 @@ import { LocalHistoryRepository, MockOnchainDataSource } from "./data";
 import type { OperationDraft, OperationReceipt, Snapshot } from "./domain";
 
 const extension = typeof chrome !== "undefined" && !!chrome.runtime?.id;
-const localWeb =
+export const localWeb =
   !extension &&
   document
     .querySelector('meta[name="onchain-mode"]')

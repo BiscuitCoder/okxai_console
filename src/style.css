@@ -183,6 +183,13 @@ aside {
   border-right: 1px solid var(--line);
   padding: 24px 18px;
 }
+.language-picker {
+  margin: 16px 0;
+  max-width: 200px;
+}
+.language-picker .select-control {
+  width: 100%;
+}
 .account-menu {
   padding: 0 4px 18px;
   margin-bottom: 14px;
@@ -882,6 +889,19 @@ dd {
 .registration-gate small {
   color: var(--muted);
   font-size: 12px;
+}
+.loading-spinner {
+  animation: loading-spin 1s linear infinite;
+}
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+  }
 }
 .startup h1 {
   margin: 20px 0;

@@ -4,7 +4,7 @@
 
 <h1 align="center">Onchain OS Console</h1>
 
-<p align="center">把本机 OnchainOS CLI 数据带到 OKX.AI 的只读个人控制台。<br />A local, read-only personal console for OnchainOS data inside OKX.AI.</p>
+<p align="center">本机 OnchainOS 只读个人控制台，可独立打开，也可通过浏览器插件嵌入 OKX.AI。<br />A local, read-only OnchainOS console: standalone in your browser or embedded in OKX.AI with a Chrome extension.</p>
 
 ## Preview / 预览
 
@@ -13,6 +13,60 @@
 > This project does not read wallet private keys or initiate signatures, payments, or onchain transactions.
 
 ## 中文
+
+### 两种使用方式
+
+两种方式共用控制台界面和本机只读查询，按自己的使用习惯选择即可。
+
+| 方式         | 在哪里使用                                   | 适合谁                                         |
+| ------------ | -------------------------------------------- | ---------------------------------------------- |
+| 独立 Web 版  | 独立浏览器标签页，访问本机地址               | 希望一条命令打开控制台、不安装浏览器插件的用户 |
+| 浏览器插件版 | 在 OKX.AI 顶栏进入「控制台」，直接在站内渲染 | 希望在浏览 OKX.AI 时查看个人数据的用户         |
+
+两种方式都需要 **Node.js 22.14+** 和已安装的 **OnchainOS CLI**。首次使用先在本机完成登录：
+
+```sh
+onchainos wallet login
+```
+
+#### 方式一：独立 Web 版（推荐）
+
+无需下载项目源码或安装浏览器插件，直接运行：
+
+```sh
+npx --yes okx-onchain-console@latest
+```
+
+命令会下载并启动本地服务，自动在默认浏览器打开控制台。界面运行在 `http://127.0.0.1:端口`，不需要打开 OKX.AI 网站。若浏览器没有自动打开，请手动打开终端输出的完整地址。在终端按 **Ctrl+C** 停止服务；仅关闭标签页不会停止服务。
+
+也可以指定端口或禁止自动打开浏览器：
+
+```sh
+npx --yes okx-onchain-console@latest --port 43127 --no-open
+```
+
+此命令不会自动安装 OnchainOS CLI 或替你完成登录授权。
+
+独立 Web 版默认使用 English，可在「Settings / 设置 → Language / 语言」中手动选择简体中文、繁體中文或 English，切换后立即生效。选择保存在当前浏览器的本机地址下，后续优先使用已保存的语言；如需重启后沿用设置，建议使用 `--port 43127` 固定端口。插件版不显示此入口，继续跟随 OKX.AI 主站语言。
+
+#### 方式二：浏览器插件版，嵌入 OKX.AI
+
+扩展会在 OKX.AI 顶栏加入「控制台」入口，将控制台渲染到站内页面，保留网站原有的 header、footer 和滚动体验。当前使用 **Chrome 116+ 桌面版**，以下快捷启动和 Companion 安装流程适用于 **macOS**：
+
+```sh
+git clone https://github.com/BiscuitCoder/okxai_console.git
+cd okxai_console
+npm ci
+npm run start:extension
+```
+
+该命令会构建扩展、注册本机 Companion，并打开 Chrome 扩展管理页和 OKX.AI 控制台。首次使用还需：
+
+1. 在 `chrome://extensions` 开启「开发者模式」。
+2. 点击「加载已解压的扩展程序」，选择项目中的 `dist` 目录。
+3. 刷新 [OKX.AI](https://www.okx.ai/zh-hans)，点击顶栏「控制台」。
+
+插件安装后，Chrome 会按需启动本机 Companion，无需额外运行 Web 服务。重新构建后，请在扩展管理页点击刷新。未安装插件时，`/_onchain-os-console` 地址仍会显示网站原有的 404 页面。
 
 ### 常用命令
 
@@ -27,7 +81,7 @@
 
 `npm start` 是 `start:web` 的快捷入口。两种构建使用独立目录，不会相互覆盖。扩展首次启动仍需在 Chrome 管理页开启开发者模式、手动加载 `dist`；已加载的扩展在重建后点击刷新。`start:extension` 沿用当前 macOS Companion 安装方式。
 
-### 本地 Web 版（推荐）
+### 从源码开发 Web 版
 
 Web 版与 Chrome 扩展版共用界面和只读查询。Web 版不需要安装扩展或注册 Native Messaging Host；浏览器直接访问本机服务。需要 Node.js 22.14+、OnchainOS CLI，并由用户在本机完成 `onchainos wallet login`。
 
@@ -47,23 +101,9 @@ npm run start:web -- --no-open
 
 服务只监听 `127.0.0.1`，启动地址包含随机凭证。请使用终端输出的完整地址；页面加载后会从地址栏移除凭证，并在当前标签页会话中保留。重启后需要使用新地址。页面仅通过同源、鉴权的 `/api/snapshot` 读取真实数据，连接失败不会切换模拟数据。浏览器开发预览仍由 `npm run dev` 提供。
 
-### npx 分发
+### 打包分发
 
-仓库已配置 `okx-onchain-console` 命令和 npm 发布文件白名单；**目前尚未发布到 npm，包名可用性和发布权限需在发布时确认**。先在本地打包并验证：
-
-```sh
-npm pack
-npx --yes --package ./okx-onchain-console-0.1.0.tgz okx-onchain-console
-```
-
-打包会自动构建，并包含 Web 启动器、只读查询和扩展构建文件。发布成功后，用户才能直接运行：
-
-```sh
-npx --yes okx-onchain-console
-npx --yes okx-onchain-console --port 43127 --no-open
-```
-
-不会自动安装 CLI、登录钱包或注册 ASP。Chrome 扩展继续按下方安装步骤使用，`npm run build` 仍生成可加载的 `dist`。
+开发者可运行 `npm pack`，自动构建两种版本并生成 npm 安装包。用户可直接通过上方 npx 命令使用已发布版本；浏览器插件仍按插件安装步骤使用。
 
 ### 为什么做这个项目
 
@@ -104,7 +144,7 @@ OKX.AI 专用路由
 - Chrome 116+ 桌面版
 - 已安装并可运行 OnchainOS CLI
 
-### 安装
+### 手动构建与安装扩展
 
 ```sh
 git clone https://github.com/BiscuitCoder/okxai_console.git
@@ -150,13 +190,48 @@ npm run dev
 
 ## English
 
-### Local web app and npx
+### Two ways to use the console
+
+Both modes share the same interface and local, read-only queries. Both require **Node.js 22.14+** and an installed **OnchainOS CLI**. Complete `onchainos wallet login` locally before first use.
+
+#### Option 1: Standalone web console (recommended)
+
+No source checkout or browser extension is needed:
+
+```sh
+npx --yes okx-onchain-console@latest
+```
+
+This downloads the package, starts a local server, and opens the console in your default browser at `http://127.0.0.1:port`. You do not need to visit OKX.AI. If the browser does not open, use the complete URL printed in the terminal. Press **Ctrl+C** in the terminal to stop; closing the tab does not stop the server.
+
+Use `npx --yes okx-onchain-console@latest --port 43127 --no-open` to choose a fixed port without opening a browser. The command does not install OnchainOS CLI or log in on your behalf.
+
+#### Option 2: Chrome extension embedded in OKX.AI
+
+The extension adds a Console entry to the OKX.AI header and renders the console inside the site, preserving its header, footer, and scrolling. Requires **Chrome 116+ desktop**. The current launcher and Companion installer support **macOS**:
+
+```sh
+git clone https://github.com/BiscuitCoder/okxai_console.git
+cd okxai_console
+npm ci
+npm run start:extension
+```
+
+This builds the extension, registers the local Companion, and opens Chrome's extensions page and the OKX.AI console. For first-time setup:
+
+1. Enable Developer mode at `chrome://extensions`.
+2. Choose **Load unpacked** and select the project's `dist` directory.
+3. Refresh [OKX.AI](https://www.okx.ai/) and click **Console** in the header.
+
+Chrome starts the Companion on demand; no separate web server is needed. Reload the extension after rebuilding. Without the extension, `/_onchain-os-console` remains a normal 404 page.
+
+### Web development and builds
 
 Run `npm ci`, then `npm run start:web` to build and open the local web console. Node.js 22.14+ and a locally installed, authenticated OnchainOS CLI are required. The server binds only to `127.0.0.1`, chooses an available port, and opens a session-authenticated browser URL. Use `npm run start:web -- --port 43127 --no-open` for a fixed port without opening a browser; press Ctrl+C to stop. `npm start` is an alias for `start:web`.
 
 `npm run build:web` builds to `dist-web`; `npm run build:extension` builds the Chrome extension to `dist`; `npm run build` builds both. On macOS, `npm run start:extension` builds the extension, registers the Companion, and opens Chrome's extensions page and OKX.AI. First-time users must manually load `dist`; existing users must reload the extension after rebuilding.
 
-The npm package is **not published yet**. Test distribution with `npm pack` and `npx --yes --package ./okx-onchain-console-0.1.0.tgz okx-onchain-console`. After publication, users can run `npx --yes okx-onchain-console`. Chrome extension builds and installation remain supported. `npm run dev` continues to use isolated demo data.
+Run `npm pack` to build both modes and produce a distributable npm package. Users can run the published version with `npx --yes okx-onchain-console@latest`. `npm run dev` continues to use isolated demo data.
 
 ### Why this project exists
 
@@ -197,7 +272,7 @@ Only structured fields verified against real CLI responses are integrated. When 
 - Chrome 116+ for desktop
 - A working OnchainOS CLI installation
 
-### Installation
+### Manual extension build and installation
 
 ```sh
 git clone https://github.com/BiscuitCoder/okxai_console.git

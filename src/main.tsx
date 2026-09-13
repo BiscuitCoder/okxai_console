@@ -13,6 +13,7 @@ import {
   FileCheck2,
   History,
   LayoutDashboard,
+  LoaderCircle,
   Radio,
   RefreshCw,
   Scale,
@@ -22,10 +23,16 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { client } from "./client";
+import { client, localWeb } from "./client";
 import { filterEvents } from "./data";
 import { Drawer } from "./Drawer";
-import { copy, localeFromDocument, translate, tutorialUrl } from "./locale";
+import {
+  copy,
+  localeFromDocument,
+  translate,
+  tutorialUrl,
+  type UiLocale,
+} from "./locale";
 import {
   operationLabels,
   type ConsoleEvent,
@@ -197,7 +204,16 @@ function Select({
   );
 }
 function App() {
-  const locale = localeFromDocument();
+  const [webLocale, setWebLocale] = useState<UiLocale>(() => {
+    const saved = localWeb ? localStorage.getItem("onchain-web-locale") : null;
+    return saved === "en" || saved === "zh-Hans" || saved === "zh-Hant"
+      ? saved
+      : "en";
+  });
+  const locale = localWeb ? webLocale : localeFromDocument();
+  useEffect(() => {
+    if (localWeb) document.documentElement.lang = locale;
+  }, [locale]);
   const ui = copy[locale];
   const t = (value: string) => translate(locale, value);
   const eventTitle = (value: string) =>
@@ -321,12 +337,39 @@ function App() {
         "*",
       );
   }
+  const languagePicker = localWeb && (
+    <div className="language-picker">
+      <Select
+        label={
+          locale === "en" ? "Language" : locale === "zh-Hant" ? "語言" : "语言"
+        }
+        value={locale}
+        onChange={(value) => {
+          localStorage.setItem("onchain-web-locale", value);
+          setWebLocale(value as UiLocale);
+        }}
+        options={[
+          { value: "zh-Hans", label: "简体中文" },
+          { value: "zh-Hant", label: "繁體中文" },
+          { value: "en", label: "English" },
+        ]}
+      />
+    </div>
+  );
   if (!snapshot)
     return (
-      <main className="startup">
-        <Radio size={32} />
+      <main className="startup" aria-busy={loading}>
+        {loading ? (
+          <LoaderCircle
+            className="loading-spinner"
+            size={32}
+            aria-hidden="true"
+          />
+        ) : (
+          <Radio size={32} aria-hidden="true" />
+        )}
         <h1>Onchain OS Console</h1>
-        <p>{loading ? ui.loading : error}</p>
+        <p role="status">{loading ? ui.loading : error}</p>
         {!loading && <button onClick={boot}>{ui.reload}</button>}
       </main>
     );
@@ -885,6 +928,18 @@ function App() {
           )}
           {page === 7 && (
             <>
+              {localWeb && (
+                <section>
+                  <h2>
+                    {locale === "en"
+                      ? "Language"
+                      : locale === "zh-Hant"
+                        ? "語言"
+                        : "语言"}
+                  </h2>
+                  {languagePicker}
+                </section>
+              )}
               <section>
                 <h2>{t("连接与数据")}</h2>
                 <div className="setting-row">
