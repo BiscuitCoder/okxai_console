@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/product-icon.png" width="160" alt="Onchain OS Console product icon" />
+  <img src="https://raw.githubusercontent.com/BiscuitCoder/okxai_console/master/public/product-icon.png" width="160" alt="Onchain OS Console product icon" />
 </p>
 
 <h1 align="center">Onchain OS Console</h1>
@@ -8,7 +8,7 @@
 
 ## Preview / 预览
 
-![Onchain OS Console overview](public/screenshots/console-overview.png)
+![Onchain OS Console overview](https://raw.githubusercontent.com/BiscuitCoder/okxai_console/master/public/screenshots/console-overview.png)
 
 > This project does not read wallet private keys or initiate signatures, payments, or onchain transactions.
 

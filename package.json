@@ -1,7 +1,12 @@
 {
   "name": "okx-onchain-console",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local read-only OnchainOS console for your browser, with optional Chrome extension support",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BiscuitCoder/okxai_console.git"
+  },
+  "homepage": "https://github.com/BiscuitCoder/okxai_console#readme",
   "bin": {
     "okx-onchain-console": "./web.mjs"
   },
