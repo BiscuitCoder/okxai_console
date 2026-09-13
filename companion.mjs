@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { chmod, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
@@ -289,7 +289,7 @@ async function a2mcpInvocations(accountId) {
   return records.filter(Boolean);
 }
 
-async function snapshot() {
+export async function snapshot() {
   const warnings = [];
   const status =
     (await optional("钱包状态", ["wallet", "status"], warnings)) ?? {};
@@ -815,11 +815,12 @@ async function main() {
   });
 }
 
-main().catch((error) => {
-  if (process.argv.some((arg) => arg.startsWith("--"))) {
-    console.error(JSON.stringify({ ok: false, error: message(error) }));
-    process.exitCode = 1;
-  } else {
-    send({ version: 1, ok: false, error: message(error) });
-  }
-});
+if (process.argv[1] && realpathSync(process.argv[1]) === scriptPath)
+  main().catch((error) => {
+    if (process.argv.some((arg) => arg.startsWith("--"))) {
+      console.error(JSON.stringify({ ok: false, error: message(error) }));
+      process.exitCode = 1;
+    } else {
+      send({ version: 1, ok: false, error: message(error) });
+    }
+  });

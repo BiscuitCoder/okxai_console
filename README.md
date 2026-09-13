@@ -14,6 +14,57 @@
 
 ## 中文
 
+### 常用命令
+
+| 命令                      | 用途                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| `npm run start:web`       | 构建 Web 版、启动本地服务并自动打开浏览器                                       |
+| `npm run start:extension` | 构建扩展、注册本机 Companion，并打开 Chrome 扩展管理页和 OKX.AI 控制台（macOS） |
+| `npm run build:web`       | 仅构建 Web 版到 `dist-web`                                                      |
+| `npm run build:extension` | 仅构建浏览器扩展到 `dist`                                                       |
+| `npm run build`           | 构建两种版本                                                                    |
+| `npm run dev`             | 启动 Vite 热更新预览，使用模拟数据                                              |
+
+`npm start` 是 `start:web` 的快捷入口。两种构建使用独立目录，不会相互覆盖。扩展首次启动仍需在 Chrome 管理页开启开发者模式、手动加载 `dist`；已加载的扩展在重建后点击刷新。`start:extension` 沿用当前 macOS Companion 安装方式。
+
+### 本地 Web 版（推荐）
+
+Web 版与 Chrome 扩展版共用界面和只读查询。Web 版不需要安装扩展或注册 Native Messaging Host；浏览器直接访问本机服务。需要 Node.js 22.14+、OnchainOS CLI，并由用户在本机完成 `onchainos wallet login`。
+
+从源码启动：
+
+```sh
+npm ci
+npm run start:web
+```
+
+默认选择空闲端口，自动打开浏览器。关闭标签页不会停止服务，在终端按 Ctrl+C 停止。指定固定端口可以保留该地址下的账户选择：
+
+```sh
+npm run start:web -- --port 43127
+npm run start:web -- --no-open
+```
+
+服务只监听 `127.0.0.1`，启动地址包含随机凭证。请使用终端输出的完整地址；页面加载后会从地址栏移除凭证，并在当前标签页会话中保留。重启后需要使用新地址。页面仅通过同源、鉴权的 `/api/snapshot` 读取真实数据，连接失败不会切换模拟数据。浏览器开发预览仍由 `npm run dev` 提供。
+
+### npx 分发
+
+仓库已配置 `okx-onchain-console` 命令和 npm 发布文件白名单；**目前尚未发布到 npm，包名可用性和发布权限需在发布时确认**。先在本地打包并验证：
+
+```sh
+npm pack
+npx --yes --package ./okx-onchain-console-0.1.0.tgz okx-onchain-console
+```
+
+打包会自动构建，并包含 Web 启动器、只读查询和扩展构建文件。发布成功后，用户才能直接运行：
+
+```sh
+npx --yes okx-onchain-console
+npx --yes okx-onchain-console --port 43127 --no-open
+```
+
+不会自动安装 CLI、登录钱包或注册 ASP。Chrome 扩展继续按下方安装步骤使用，`npm run build` 仍生成可加载的 `dist`。
+
 ### 为什么做这个项目
 
 OKX.AI 上的 Agent、服务与任务逐渐增多，但与个人相关的数据主要分散在 OnchainOS CLI 的不同命令和本机记录中。用户需要反复切换终端，才能确认自己有哪些身份、钱包地址、服务、调用、订阅和交易记录；当结果为空时，也很难立即判断是“确实没有数据”、登录失效，还是接口查询失败。
@@ -98,6 +149,14 @@ npm run dev
 ---
 
 ## English
+
+### Local web app and npx
+
+Run `npm ci`, then `npm run start:web` to build and open the local web console. Node.js 22.14+ and a locally installed, authenticated OnchainOS CLI are required. The server binds only to `127.0.0.1`, chooses an available port, and opens a session-authenticated browser URL. Use `npm run start:web -- --port 43127 --no-open` for a fixed port without opening a browser; press Ctrl+C to stop. `npm start` is an alias for `start:web`.
+
+`npm run build:web` builds to `dist-web`; `npm run build:extension` builds the Chrome extension to `dist`; `npm run build` builds both. On macOS, `npm run start:extension` builds the extension, registers the Companion, and opens Chrome's extensions page and OKX.AI. First-time users must manually load `dist`; existing users must reload the extension after rebuilding.
+
+The npm package is **not published yet**. Test distribution with `npm pack` and `npx --yes --package ./okx-onchain-console-0.1.0.tgz okx-onchain-console`. After publication, users can run `npx --yes okx-onchain-console`. Chrome extension builds and installation remain supported. `npm run dev` continues to use isolated demo data.
 
 ### Why this project exists
 

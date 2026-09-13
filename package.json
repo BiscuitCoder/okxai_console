@@ -1,26 +1,41 @@
 {
   "name": "okx-onchain-console",
   "version": "0.1.0",
-  "private": true,
+  "description": "Local read-only OnchainOS console for your browser, with optional Chrome extension support",
+  "bin": {
+    "okx-onchain-console": "./web.mjs"
+  },
+  "files": [
+    "web.mjs",
+    "companion.mjs",
+    "dist",
+    "dist-web",
+    "public/manifest.json",
+    "COMPANION.md"
+  ],
   "type": "module",
   "engines": {
     "node": ">=22.14.0"
   },
   "scripts": {
+    "start": "npm run start:web --",
+    "start:web": "npm run build:web && node web.mjs",
+    "start:extension": "npm run build:extension && npm run companion:install && open -a 'Google Chrome' chrome://extensions https://www.okx.ai/_onchain-os-console",
+    "prepack": "npm run build",
     "dev": "vite --host 127.0.0.1",
     "companion:install": "node companion.mjs --install",
     "companion:probe": "node companion.mjs --snapshot",
     "typecheck": "tsc --noEmit",
-    "build": "npm run typecheck && vite build && vite build --config vite.content.config.ts",
-    "test": "vitest run",
+    "build": "npm run build:web && npm run build:extension",
+    "build:web": "npm run typecheck && vite build --mode web",
+    "build:extension": "npm run typecheck && vite build && vite build --config vite.content.config.ts",
+    "test": "npm run build && vitest run",
     "format": "prettier --write src test *.ts *.mjs *.json *.html *.md public/manifest.json"
   },
-  "dependencies": {
+  "devDependencies": {
     "lucide-react": "^0.468.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
-  },
-  "devDependencies": {
+    "react-dom": "^19.1.0",
     "@types/chrome": "^0.0.287",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",

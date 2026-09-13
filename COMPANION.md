@@ -1,5 +1,13 @@
 # 本机只读数据桥接
 
+## 本地 Web 入口
+
+`npm start` / 发布后的 `npx okx-onchain-console` 使用 `web.mjs` 启动仅监听 `127.0.0.1` 的 HTTP 服务。该服务直接调用 Companion 导出的 `snapshot()`，不启动 Native Messaging 协议；原扩展仍按原协议工作。
+
+Web 服务托管 `dist-web` 界面（`npm run build:web` 生成），通过页面标记明确选择真实数据模式。`GET /api/snapshot` 必须携带每次启动新生成的 Bearer 凭证，同时验证 Host、Origin 和跨站请求标记；不提供跨域访问和写入接口，也不接受 CLI 参数。凭证通过 URL fragment 交给页面，再移入 sessionStorage，避免通过 HTTP URL 或 Referer 发送。并发快照请求复用同一轮查询。Web 模式不读取演示操作历史、不支持模拟执行，也不会在查询失败时回退模拟数据。
+
+`--port` 可指定端口（默认 0，由系统选择），`--no-open` 禁止自动打开浏览器。使用 Ctrl+C 停止服务；再次启动会生成新的访问凭证。Web 与扩展复用原有 CLI 白名单、脱敏和数据来源状态。
+
 ## 边界
 
 实际扩展的数据链路为：UI → 扩展后台 → Native Messaging → `companion.mjs` → OnchainOS CLI → OKX 服务。开发预览仍使用 `MockOnchainDataSource`，两种模式不会混合或自动回退。

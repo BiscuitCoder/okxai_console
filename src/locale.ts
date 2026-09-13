@@ -248,8 +248,8 @@ const labels: Partial<Record<UiLocale, Record<string, string>>> = {
     更新服务: "更新服務",
     "仅读取网页可访问的 locale Cookie 用于界面语言；不读取表单、钱包私钥或 Vercel 环境变量。":
       "仅读取網頁可存取的 locale Cookie 用於介面語言；不讀取表單、錢包私鑰或 Vercel 環境變數。",
-    "扩展仅通过本机 OnchainOS CLI 发起只读查询。":
-      "擴展僅透過本機 OnchainOS CLI 發起唯讀查詢。",
+    "控制台仅通过本机 OnchainOS CLI 发起只读查询。":
+      "控制台僅透過本機 OnchainOS CLI 發起唯讀查詢。",
     "01 填写变更 → 02 确认卡 → 03 本地回执":
       "01 填寫變更 → 02 確認卡 → 03 本機回執",
     "02 / 请核对以下内容，再确认保存演练":
@@ -357,8 +357,8 @@ const labels: Partial<Record<UiLocale, Record<string, string>>> = {
     更新服务: "Update service",
     "仅读取网页可访问的 locale Cookie 用于界面语言；不读取表单、钱包私钥或 Vercel 环境变量。":
       "Only the page-accessible locale cookie is read for UI language. Forms, wallet private keys, and Vercel environment variables are not read.",
-    "扩展仅通过本机 OnchainOS CLI 发起只读查询。":
-      "The extension makes read-only queries through the local OnchainOS CLI only.",
+    "控制台仅通过本机 OnchainOS CLI 发起只读查询。":
+      "The console makes read-only queries through the local OnchainOS CLI only.",
     "01 填写变更 → 02 确认卡 → 03 本地回执":
       "01 Edit → 02 Confirm → 03 Local receipt",
     "02 / 请核对以下内容，再确认保存演练":
