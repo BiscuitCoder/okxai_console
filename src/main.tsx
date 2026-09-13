@@ -61,6 +61,8 @@ const formatDate = (value: string, locale: string) =>
     minute: "2-digit",
     hour12: false,
   });
+const serviceDetailsUrl = (identityId: string) =>
+  `https://www.okx.ai/agents/${encodeURIComponent(identityId)}`;
 function Badge({ children }: { children: React.ReactNode }) {
   const text = String(children);
   return (
@@ -483,7 +485,7 @@ function App() {
               { value: "all", label: ui.allStatus },
               ...[...new Set(list.map((e) => e.status))].map((item) => ({
                 value: item,
-                label: item,
+                label: t(item),
               })),
             ]}
           />
@@ -747,12 +749,36 @@ function App() {
                 .map((s) => (
                   <article className="service" key={s.id}>
                     <div className="section-title">
-                      <span className="eyebrow">
-                        {s.type} / {s.id}
-                      </span>
+                      <div className="service-heading">
+                        <span className="service-icon" aria-hidden="true">
+                          <b>{s.name.trim().charAt(0).toUpperCase()}</b>
+                          {s.icon && (
+                            <img
+                              src={s.icon}
+                              alt=""
+                              onError={(event) => event.currentTarget.remove()}
+                            />
+                          )}
+                        </span>
+                        <div>
+                          <span className="eyebrow service-reference">
+                            {s.type} /{" "}
+                            <a
+                              className="service-id"
+                              href={serviceDetailsUrl(s.identityId)}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label={`${s.id} · ${t("打开服务详情")}`}
+                            >
+                              {s.id}
+                              <ArrowUpRight size={11} />
+                            </a>
+                          </span>
+                          <h2>{s.name}</h2>
+                        </div>
+                      </div>
                       <Badge>{t(s.review)}</Badge>
                     </div>
-                    <h2>{s.name}</h2>
                     <div className="price">
                       {s.price}
                       <small>

@@ -130,6 +130,13 @@ it("完整演练流程：取消不写入、确认保存、账户隔离、刷新�
     ).toContain(label);
   }
   await click("服务");
+  const serviceLink = document.querySelector<HTMLAnchorElement>(".service-id");
+  expect(serviceLink?.textContent).toContain("demo-seo");
+  expect(serviceLink?.href).toBe("https://www.okx.ai/agents/demo-asp");
+  expect(serviceLink?.target).toBe("_blank");
+  expect(
+    document.querySelector<HTMLImageElement>(".service-icon img")?.src,
+  ).toContain("/product-icon.png");
   await click("演练调价");
   expect(document.querySelector("dialog[open]")).toBeTruthy();
   await act(async () => {

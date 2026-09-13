@@ -1,6 +1,6 @@
 {
   "name": "okx-onchain-console",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "Local read-only OnchainOS console for your browser, with optional Chrome extension support",
   "repository": {
     "type": "git",

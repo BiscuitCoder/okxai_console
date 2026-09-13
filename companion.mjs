@@ -98,14 +98,16 @@ const number = (value, keys) => {
 };
 const displayLabel = (value) => {
   const raw = String(value ?? "");
+  const normalized = raw.trim().toLowerCase();
   return (
     {
       "not listed": "未上架",
-      "Listing under review": "上架审核中",
-      SUCCESS: "成功",
-      PENDING: "处理中",
-      FAILED: "失败",
-    }[raw] ?? raw
+      "review not submitted": "未上架",
+      "listing under review": "上架审核中",
+      success: "成功",
+      pending: "处理中",
+      failed: "失败",
+    }[normalized] ?? raw
   );
 };
 const cell = (value, names) => {
@@ -465,6 +467,9 @@ export async function snapshot() {
         rating: Number.isFinite(Number(cell(agent, ["rating"])))
           ? Number(cell(agent, ["rating"]))
           : null,
+        picture:
+          text(agent, ["profilePicture", "picture", "avatar", "icon"]) ||
+          undefined,
         serviceIds: [],
       };
     })
@@ -491,8 +496,15 @@ export async function snapshot() {
         ),
       })),
   );
-  const services = serviceResults.flatMap(({ identity, data }) =>
-    serviceRows(data).map((item, index) => {
+  const services = serviceResults.flatMap(({ identity, data }) => {
+    const agentPicture =
+      identity.picture ||
+      array(data)
+        .map((group) =>
+          text(group?.agentInfo, ["profilePicture", "picture", "avatar"]),
+        )
+        .find(Boolean);
+    return serviceRows(data).map((item, index) => {
       const id = text(
         item,
         ["serviceId", "id", "sid"],
@@ -513,11 +525,15 @@ export async function snapshot() {
         price: String(field(item, ["fee", "price"], ["fee"]) ?? "0"),
         endpoint: String(field(item, ["endpoint"], ["endpoint"]) ?? "未提供"),
         description: text(item, ["serviceDescription", "description"]),
+        icon:
+          text(item, ["servicePicture", "serviceIcon", "icon", "picture"]) ||
+          agentPicture ||
+          undefined,
         volume: number(item, ["salesCount", "soldCount"]),
         review: identity.review,
       };
-    }),
-  );
+    });
+  });
 
   const activityResults = await Promise.all(
     identities.map(async (identity) => {

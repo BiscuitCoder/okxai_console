@@ -30,7 +30,7 @@ export async function startServer({ port = 0, getSnapshot = snapshot } = {}) {
     res.setHeader("Referrer-Policy", "no-referrer");
     res.setHeader(
       "Content-Security-Policy",
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://static.okx.com https://static.oklink.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
     );
     const reply = (status, body, type = "application/json; charset=utf-8") => {
       res.writeHead(status, { "Content-Type": type });

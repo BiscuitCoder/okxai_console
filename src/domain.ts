@@ -16,6 +16,7 @@ export interface Identity {
   online: boolean;
   address: string;
   rating: number | null;
+  picture?: string;
   serviceIds: string[];
 }
 export interface Service {
@@ -27,6 +28,7 @@ export interface Service {
   price: string;
   endpoint: string;
   description: string;
+  icon?: string;
   volume: number;
   review: string;
 }

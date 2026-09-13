@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Onchain OS Console",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAk0PLRnak4oaeN5zem/ZgobfvCEEvq3kvaAQtzcEMd8pS68UQ/j68wsSS0jUa3L2hmwRkBF19j4Qtr5FHr31ZmcgC268hf6Bn75ZfT+6rPGXx+MeDMo/EesdETcf3LuHKDaeqyAZivGu85O5YlP2aOAhEi4Z4HNHbBGcHd2xFK9cvxgPu/QlURBwINZbKa9wb1xp/ChKrAgL4OtHgJWlqPxVZGnjHiXkz21h1bq5kyECUGMWtLn3btXvfyXU/n7/WQmOE568HXGLL9E4okEU8JK+HfOcarAmKyIBBbCkSDpxVPCsV95hCZ+2es5SupK+D9NfnicXRgocqrsM76qH5AwIDAQAB",
   "minimum_chrome_version": "116",
   "description": "A local, read-only personal console for OnchainOS data inside OKX.AI.",

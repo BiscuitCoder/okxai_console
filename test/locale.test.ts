@@ -25,6 +25,11 @@ describe("OKX.AI 语言跟随", () => {
 
   it("翻译本机数据返回的审核、网络和交易方向标签", () => {
     expect(translate("en", "上架审核中")).toBe("Listing under review");
+    expect(translate("en", "未上架")).toBe("Review not submitted");
+    expect(translate("en", "调用完成")).toBe("Call completed");
+    expect(translate("en", "待支付")).toBe("Awaiting payment");
+    expect(translate("zh-Hans", "Review not submitted")).toBe("未上架");
+    expect(translate("zh-Hant", "调用失败")).toBe("調用失敗");
     expect(translate("en", "全部网络")).toBe("All networks");
     expect(translate("en", "转入")).toBe("Transfer in");
     expect(translate("zh-Hant", "数据可用性")).toBe("資料可用性");
